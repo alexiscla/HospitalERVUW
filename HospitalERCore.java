@@ -31,7 +31,8 @@ import java.io.*;
  */
 
 public class HospitalERCore{
-
+    private int totalNumTreated = 0;
+    private List <Integer> treatTime = new ArrayList <Integer>;
     // Fields for recording the patients waiting in the waiting room and being treated in the treatment room
     private Queue<Patient> waitingRoom = new ArrayDeque<Patient>();
     private static final int MAX_PATIENTS = 5;   // max number of patients currently being treated
@@ -59,7 +60,11 @@ public class HospitalERCore{
         time = 0;           // set the "tick" to zero.
         // reset the waiting room, the treatment room, and the statistics.
         /*# YOUR CODE HERE */
+        if(usePriorityQueue){
 
+        }
+        waitingRoom.clear();
+        treatmentRoom.clear();
         UI.clearGraphics();
         UI.clearText();
     }
@@ -70,7 +75,7 @@ public class HospitalERCore{
     public void run(){
         if (running) { return; } // don't start simulation if already running one!
         running = true;
-        while (running){         // each time step, check whether the simulation should pause.
+        while (running) {         // each time step, check whether the simulation should pause.
 
             // Hint: if you are stepping through a set, you can't remove
             //   items from the set inside the loop!
@@ -79,7 +84,26 @@ public class HospitalERCore{
             //   the items on the temporary list from the set.
 
             /*# YOUR CODE HERE */
-
+            time++;
+            for (Patient p : treatmentRoom) {
+                if (p.allTreatmentsCompleted()) {
+                    treatTime.add(p.getTotalTreatmentTime());
+                    totalNumTreated++;
+                    treatmentRoom.remove(p);
+                } else if (p.currentTreatmentFinished()) {
+                    p.removeCurrentTreatment();
+                } else {
+                    p.advanceCurrentTreatmentByTick();
+                }
+            }
+            for (Patient p : waitingRoom){
+                p.advanceCurrentTreatmentByTick();
+            }
+            if (treatmentRoom.size() < MAX_PATIENTS){
+                for(int i = 0; i < (MAX_PATIENTS - treatmentRoom.size()); i++) {
+                    treatmentRoom.add(waitingRoom.poll());
+                }
+            }
             // Gets any new patient that has arrived and adds them to the waiting room
             Patient newPatient = PatientGenerator.getNextPatient(time);
             if (newPatient != null){
@@ -100,7 +124,13 @@ public class HospitalERCore{
      */
     public void reportStatistics(){
         /*# YOUR CODE HERE */
-
+        int totalTreatTime = 0;
+        for(int i : treatTime) {
+            totalTreatTime += i;
+        }
+        int aveTreatTime = totalTreatTime/treatTime.size();
+        UI.println("There were " + totalNumTreated + " patients treated.");
+        UI.println("The average treatment time was: " + aveTreatTime);
     }
 
 
