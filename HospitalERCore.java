@@ -32,7 +32,8 @@ import java.io.*;
 
 public class HospitalERCore{
     private int totalNumTreated = 0;
-    private List <Integer> treatTime = new ArrayList <Integer>;
+    private List <Integer> treatTime = new ArrayList<Integer>();
+
     // Fields for recording the patients waiting in the waiting room and being treated in the treatment room
     private Queue<Patient> waitingRoom = new ArrayDeque<Patient>();
     private static final int MAX_PATIENTS = 5;   // max number of patients currently being treated
@@ -61,7 +62,9 @@ public class HospitalERCore{
         // reset the waiting room, the treatment room, and the statistics.
         /*# YOUR CODE HERE */
         if(usePriorityQueue){
-
+         waitingRoom = new PriorityQueue<Patient>(Patient::compareTo);
+        } else if (!usePriorityQueue) {
+            waitingRoom = new ArrayDeque<Patient>();
         }
         waitingRoom.clear();
         treatmentRoom.clear();
@@ -73,10 +76,10 @@ public class HospitalERCore{
      * Main loop of the simulation
      */
     public void run(){
+        Set<Patient> treatmentRoomRm = new HashSet<Patient>();
         if (running) { return; } // don't start simulation if already running one!
         running = true;
         while (running) {         // each time step, check whether the simulation should pause.
-
             // Hint: if you are stepping through a set, you can't remove
             //   items from the set inside the loop!
             //   If you need to remove items, you can add the items to a
@@ -89,26 +92,33 @@ public class HospitalERCore{
                 if (p.allTreatmentsCompleted()) {
                     treatTime.add(p.getTotalTreatmentTime());
                     totalNumTreated++;
-                    treatmentRoom.remove(p);
+                    treatmentRoomRm.add(p);
                 } else if (p.currentTreatmentFinished()) {
                     p.removeCurrentTreatment();
                 } else {
                     p.advanceCurrentTreatmentByTick();
                 }
             }
+            for(Patient p : treatmentRoomRm) {
+                treatmentRoom.remove(p);
+                UI.println(time+ ": Discharge: " + p);
+            }
+            treatmentRoomRm.clear();
+
             for (Patient p : waitingRoom){
-                p.advanceCurrentTreatmentByTick();
+                p.waitForATick();
             }
-            if (treatmentRoom.size() < MAX_PATIENTS){
-                for(int i = 0; i < (MAX_PATIENTS - treatmentRoom.size()); i++) {
-                    treatmentRoom.add(waitingRoom.poll());
-                }
+
+            if(treatmentRoom.size() < MAX_PATIENTS && waitingRoom.size() != 0 ){
+                treatmentRoom.add(waitingRoom.poll());
             }
+
             // Gets any new patient that has arrived and adds them to the waiting room
             Patient newPatient = PatientGenerator.getNextPatient(time);
             if (newPatient != null){
-                UI.println(time+ ": Arrived: "+newPatient);
+                UI.println(time+ ": Arrived: " + newPatient);
                 waitingRoom.offer(newPatient);
+                redraw();
             }
             redraw();
             UI.sleep(delay);

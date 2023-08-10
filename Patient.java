@@ -99,7 +99,19 @@ public class Patient implements Comparable<Patient>{
     public int compareTo(Patient other){
         /*# YOUR CODE HERE */
 
-        return 0;
+    int priority1 = this.priority;
+    int priority2 = other.getPriority();
+    if(priority1 != priority2) {
+        return Integer.compare(priority1, priority2);
+    } else {
+        if(this.getTotalWaitingTime() < other.getTotalWaitingTime()){
+            return -1;
+        } else  {
+            return 1;
+        }
+    }
+
+
     }
 
     // Methods for simulating the progress of the Patient through their waiting and their treatments

@@ -65,12 +65,15 @@ public class HospitalERCompl{
     /**
      * Main loop of the simulation
      */
-    public void run(){
-        if (running) { return; } // don't start simulation if already running one!
+    public void run() {
+        if (running) {
+            return;
+        } // don't start simulation if already running one!
         running = true;
-        while (running){
+        while (running) {
             /*# YOUR CODE HERE */
-        
+
+        }
     }
 
 
